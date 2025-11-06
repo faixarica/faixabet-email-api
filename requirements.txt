@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+python-dotenv
+sqlalchemy
+passlib[bcrypt]
+bcrypt
+psycopg2-binary
