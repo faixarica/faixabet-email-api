@@ -22,7 +22,7 @@ CORS(app)
 SMTP_HOST = os.getenv("SMTP_HOST", "mail.faixabet.com.br")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "sac@faixabet.com.br")
-SMTP_PASS = os.getenv("SMTP_PASS", "SENHA_AQUI")
+SMTP_PASS = os.getenv("SMTP_PASS", "rb&R-2OU")
 SMTP_USE_SSL = (SMTP_PORT == 465)
 
 
@@ -241,5 +241,6 @@ def password_reset():
 
 # ---------------- Boot local ----------------
 if __name__ == "__main__":
-    print("🚀 Servidor Flask iniciado na porta 5000...")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
