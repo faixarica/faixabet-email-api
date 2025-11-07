@@ -5,3 +5,4 @@ sqlalchemy
 passlib[bcrypt]
 bcrypt
 psycopg2-binary
+brevo

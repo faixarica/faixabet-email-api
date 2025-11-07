@@ -5,6 +5,10 @@ from email.mime.text import MIMEText
 import smtplib, os, secrets, hashlib, datetime as dt
 from dotenv import load_dotenv
 from smtplib import SMTP_SSL
+from brevo import Client
+from brevo.api import TransactionalEmailsApi
+from brevo.models import SendSmtpEmail
+from brevo.configuration import Configuration
 load_dotenv()
 # topo do email_api.py
 from passlib.hash import pbkdf2_sha256  # add isto
@@ -25,38 +29,32 @@ SMTP_USER = os.getenv("SMTP_USER", "sac@faixabet.com.br")
 SMTP_PASS = os.getenv("SMTP_PASS", "rb&R-2OU")
 SMTP_USE_SSL = (SMTP_PORT == 465)
 
-
-
 # ---------------- DB ----------------
 DATABASE_URL = os.getenv("DATABASE_URL")  # ex: postgres://user:pass@host/db
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)    
-import socket
+
+import requests
+import os
+
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 def send_mail_html(destino: str, assunto: str, html: str):
-    global SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS   # <-- aqui está a correção
+    url = "https://api.brevo.com/v3/smtp/email"
+    payload = {
+        "sender": {"name": "fAIxaBet", "email": "sac@faixabet.com.br"},
+        "to": [{"email": destino}],
+        "subject": assunto,
+        "htmlContent": html
+    }
 
-    msg = MIMEMultipart("alternative")
-    msg["From"] = f"fAIxaBet <{SMTP_USER}>"
-    msg["To"] = destino
-    msg["Subject"] = assunto
-    msg.attach(MIMEText(html, "html", "utf-8"))
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "api-key": BREVO_API_KEY
+    }
 
-    try:
-        # ✅ força IPv4 (Locaweb não aceita IPv6)
-        ipv4 = socket.gethostbyname(SMTP_HOST)
-
-        server = smtplib.SMTP(ipv4, SMTP_PORT, timeout=12)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(SMTP_USER, SMTP_PASS)
-        server.send_message(msg)
-        server.quit()
-
-        print("✅ Email enviado via IPv4 + Porta 587 + STARTTLS")
-
-    except Exception as e:
-        print("❌ Erro ao enviar email (IPv4 forçado):", e)
+    resp = requests.post(url, json=payload, headers=headers, timeout=10)
+    print("\n📨 BREVO RESPONSE:", resp.status_code, resp.text, "\n")
 
 
 def hash_token(token: str) -> str:
@@ -239,8 +237,13 @@ def password_reset():
         print("reset error:", e)
         return jsonify({"ok": False, "error": str(e)}), 500
 
-# ---------------- Boot local ----------------
+# ---------------- Boot local ----------------#
+#if __name__ == "__main__":
+#    import os
+#    port = int(os.environ.get("PORT", 5000))
+#    app.run(host="0.0.0.0", port=port, debug=False)
+
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    from send_brevo import *
+    send_brevo_html("afranciscof@gmail.com", "Teste Brevo ✅", "<h2>Funcionou!</h2>")
+
