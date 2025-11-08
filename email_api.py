@@ -13,7 +13,7 @@ from sib_api_v3_sdk.rest import ApiException
 from sqlalchemy import create_engine, text
 import bcrypt
 from passlib.hash import pbkdf2_sha256
-    ''
+
 # Hash de senha (bcrypt)
 import bcrypt
 
