@@ -13,7 +13,7 @@ from sib_api_v3_sdk.rest import ApiException
 from sqlalchemy import create_engine, text
 import bcrypt
 from passlib.hash import pbkdf2_sha256
-
+    ''
 # Hash de senha (bcrypt)
 import bcrypt
 
@@ -242,6 +242,5 @@ def password_reset():
 #    app.run(host="0.0.0.0", port=port, debug=False)
 
 if __name__ == "__main__":
-    from send_brevo import *
     send_brevo_html("afranciscof@gmail.com", "Teste Brevo ✅", "<h2>Funcionou!</h2>")
 
