@@ -178,8 +178,19 @@ def password_forgot():
         </div>
         """
 
-        send_mail_html(email, "🔐 Redefinir senha — fAIxaBet", html)
+        import threading
+
+        # Envio assíncrono = não trava o Streamlit e nem o Render
+        threading.Thread(
+            target=send_brevo_html,
+            args=(email, "🔐 Redefinir senha — fAIxaBet", html),
+            daemon=True
+        ).start()
+
+        # ✅ Responde imediatamente
         return jsonify({"ok": True}), 200
+
+
 
     except Exception as e:
         print("forgot error:", e)
