@@ -36,23 +36,40 @@ import os
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
-def send_mail_html(destino: str, assunto: str, html: str):
-    url = "https://api.brevo.com/v3/smtp/email"
-    payload = {
-        "sender": {"name": "fAIxaBet", "email": "sac@faixabet.com.br"},
-        "to": [{"email": destino}],
-        "subject": assunto,
-        "htmlContent": html
-    }
+# ---------------- EMAIL via BREVO ----------------
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "api-key": BREVO_API_KEY
-    }
+def send_brevo_html(destino: str, assunto: str, html: str):
+    print("📨 [BREVO] Preparando envio para:", destino)
 
-    resp = requests.post(url, json=payload, headers=headers, timeout=10)
-    print("\n📨 BREVO RESPONSE:", resp.status_code, resp.text, "\n")
+    api_key = os.getenv("BREVO_API_KEY")
+    if not api_key:
+        print("❌ [BREVO] API KEY ausente! Definir BREVO_API_KEY no Render.")
+        return False
+
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = api_key
+
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+        sib_api_v3_sdk.ApiClient(configuration)
+    )
+
+    email = sib_api_v3_sdk.SendSmtpEmail(
+        to=[{"email": destino}],
+        sender={"name": "fAIxaBet", "email": "sac@faixabet.com.br"},
+        subject=assunto,
+        html_content=html
+    )
+
+    try:
+        result = api_instance.send_transac_email(email)
+        print("✅ [BREVO] Email enviado com sucesso!", result)
+        return True
+    except ApiException as e:
+        print("❌ [BREVO] ERRO ao enviar:", e)
+        return False
+
 
 
 def hash_token(token: str) -> str:
@@ -62,7 +79,6 @@ def hash_token(token: str) -> str:
 # substitua a função hash_password por:
 def hash_password(plain: str) -> str:
     return pbkdf2_sha256.hash(plain)
-
 
 def verify_password(plain: str, hashed: str) -> bool:
     try:
@@ -199,7 +215,7 @@ def password_forgot():
 
 # ---------- Aplicar nova senha ----------
 @app.route("/password/reset", methods=["POST"])
-def password_reset():
+        def password_reset():
     try:
         data = request.get_json(force=True)
         token = data.get("token", "")
