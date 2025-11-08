@@ -1,8 +1,9 @@
 Flask
-Flask-Cors
-python-dotenv
-sqlalchemy
-passlib[bcrypt]
-bcrypt
+flask-cors
+requests
 psycopg2-binary
-brevo
+sqlalchemy
+bcrypt
+passlib
+python-dotenv
+sib-api-v3-sdk
