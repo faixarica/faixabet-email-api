@@ -5,16 +5,14 @@ from email.mime.text import MIMEText
 import smtplib, os, secrets, hashlib, datetime as dt
 from dotenv import load_dotenv
 from smtplib import SMTP_SSL
-from brevo import Client
-from brevo.api import TransactionalEmailsApi
-from brevo.models import SendSmtpEmail
-from brevo.configuration import Configuration
 load_dotenv()
-# topo do email_api.py
-from passlib.hash import pbkdf2_sha256  # add isto
 
-# ---- DB (SQLAlchemy Core) ----
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
 from sqlalchemy import create_engine, text
+import bcrypt
+from passlib.hash import pbkdf2_sha256
 
 # Hash de senha (bcrypt)
 import bcrypt
