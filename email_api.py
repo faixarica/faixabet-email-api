@@ -247,11 +247,9 @@ def password_reset():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 # ---------------- Boot local ----------------#
-#if __name__ == "__main__":
-#    import os
-#    port = int(os.environ.get("PORT", 5000))
-#    app.run(host="0.0.0.0", port=port, debug=False)
-
 if __name__ == "__main__":
-    send_brevo_html("afranciscof@gmail.com", "Teste Brevo ✅", "<h2>Funcionou!</h2>")
+   import os
+   port = int(os.environ.get("PORT", 5000))
+   app.run(host="0.0.0.0", port=port, debug=False)
+
 
