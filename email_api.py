@@ -215,7 +215,7 @@ def password_forgot():
 
 # ---------- Aplicar nova senha ----------
 @app.route("/password/reset", methods=["POST"])
-        def password_reset():
+def password_reset():
     try:
         data = request.get_json(force=True)
         token = data.get("token", "")
