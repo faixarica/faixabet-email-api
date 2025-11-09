@@ -1,3 +1,5 @@
+import requests
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from email.mime.multipart import MIMEMultipart
@@ -15,8 +17,6 @@ import bcrypt
 from passlib.hash import pbkdf2_sha256
 
 # Hash de senha (bcrypt)
-import bcrypt
-
 app = Flask(__name__)
 CORS(app)
 
@@ -31,45 +31,48 @@ SMTP_USE_SSL = (SMTP_PORT == 465)
 DATABASE_URL = os.getenv("DATABASE_URL")  # ex: postgres://user:pass@host/db
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)    
 
-import requests
-import os
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 # ---------------- EMAIL via BREVO ----------------
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
 
 def send_brevo_html(destino: str, assunto: str, html: str):
-    print("📨 [BREVO] Preparando envio para:", destino)
+    print("🔍 [DEBUG] Entrou em send_brevo_html para:", destino)
 
     api_key = os.getenv("BREVO_API_KEY")
+    print("🔍 [DEBUG] BREVO_API_KEY carregada?", bool(api_key))
+
     if not api_key:
-        print("❌ [BREVO] API KEY ausente! Definir BREVO_API_KEY no Render.")
+        print("❌ [BREVO] API KEY ausente no ambiente do Render")
         return False
-
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = api_key
-
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
-        sib_api_v3_sdk.ApiClient(configuration)
-    )
-
-    email = sib_api_v3_sdk.SendSmtpEmail(
-        to=[{"email": destino}],
-        sender={"name": "fAIxaBet", "email": "sac@faixabet.com.br"},
-        subject=assunto,
-        html_content=html
-    )
 
     try:
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = api_key
+
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+            sib_api_v3_sdk.ApiClient(configuration)
+        )
+
+        email = sib_api_v3_sdk.SendSmtpEmail(
+            to=[{"email": destino}],
+            sender={"name": "fAIxaBet", "email": "sac@faixabet.com.br"},
+            subject=assunto,
+            html_content=html
+        )
+
+        print("🚀 [BREVO] Enviando...")
         result = api_instance.send_transac_email(email)
-        print("✅ [BREVO] Email enviado com sucesso!", result)
+        print("✅ [BREVO] Sucesso:", result)
         return True
+
     except ApiException as e:
-        print("❌ [BREVO] ERRO ao enviar:", e)
+        print("❌ [BREVO] ERRO API:", e)
         return False
 
+    except Exception as e:
+        print("❌ [BREVO] ERRO DESCONHECIDO:", e)
+        return False
 
 
 def hash_token(token: str) -> str:
@@ -111,7 +114,8 @@ def send_palpite():
         <p><b>Jogador:</b> {jogador}</p>
         """
 
-        send_mail_html(email, "🎯 Seus palpites do simulador fAIxaBet", corpo)
+        send_brevo_html(email, "🎯 Seus palpites do simulador fAIxaBet", corpo)
+
         return jsonify({"status": "ok", "message": "E-mail enviado com sucesso!"})
     except Exception as e:
         print("❌ Erro ao enviar e-mail:", e)
@@ -205,13 +209,9 @@ def password_forgot():
 
         return jsonify({"ok": True}), 200
 
-
-
-
     except Exception as e:
         print("forgot error:", e)
         return jsonify({"ok": False, "error": str(e)}), 500
-
 
 # ---------- Aplicar nova senha ----------
 @app.route("/password/reset", methods=["POST"])
