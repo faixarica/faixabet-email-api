@@ -195,16 +195,16 @@ def password_forgot():
         """
 
         import threading
+        print("🚦 Iniciando fluxo de envio de senha para:", email)
 
-        # Envio assíncrono = não trava o Streamlit e nem o Render
         threading.Thread(
             target=send_brevo_html,
             args=(email, "🔐 Redefinir senha — fAIxaBet", html),
             daemon=True
         ).start()
 
-        # ✅ Responde imediatamente
         return jsonify({"ok": True}), 200
+
 
 
 
